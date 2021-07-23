@@ -1,4 +1,4 @@
-trait Factory {
+pub trait Factory {
     type Kind;
     type Output;
 
