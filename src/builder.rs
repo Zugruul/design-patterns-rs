@@ -8,17 +8,16 @@ mod tests {
     use super::*;
     use std::borrow::BorrowMut;
 
-    #[derive(Default, Debug, PartialEq)]
+    #[derive(Debug, PartialEq)]
     struct Person {
         pub name: String,
-        pub birthdate: String,
+        pub birthdate: Option<String>,
         pub favorite_things: Vec<String>,
     }
 
     #[derive(Debug, PartialEq)]
     enum PersonBuildingError {
         RequiresName,
-        RequiresBirthdate,
         RequiresFavoriteThingsList,
     }
 
@@ -63,17 +62,16 @@ mod tests {
             let birthdate_opt: Option<String> = self.birthdate.take();
             let favorite_things_opt: Option<Vec<String>> = self.favorite_things.take();
 
-            use PersonBuildingError::{RequiresName, RequiresBirthdate, RequiresFavoriteThingsList};
+            use PersonBuildingError::{RequiresName, RequiresFavoriteThingsList};
 
             match (name_opt, birthdate_opt, favorite_things_opt) {
-                (None, None, None) => Err(vec![RequiresName, RequiresBirthdate, RequiresFavoriteThingsList]),
-                (None, None, Some(_)) => Err(vec![RequiresName, RequiresBirthdate]),
+                (None, None, None) => Err(vec![RequiresName, RequiresFavoriteThingsList]),
+                (None, None, Some(_)) => Err(vec![RequiresName]),
                 (None, Some(_), None) => Err(vec![RequiresName, RequiresFavoriteThingsList]),
                 (None, Some(_), Some(_)) => Err(vec![RequiresName]),
-                (Some(_), None, None) => Err(vec![RequiresBirthdate, RequiresFavoriteThingsList]),
-                (Some(_), None, Some(_)) => Err(vec![RequiresBirthdate]),
+                (Some(_), None, None) => Err(vec![RequiresFavoriteThingsList]),
                 (Some(_), Some(_), None) => Err(vec![RequiresFavoriteThingsList]),
-                (Some(name), Some(birthdate), Some(favorite_things)) => {
+                (Some(name), birthdate, Some(favorite_things)) => {
                     Ok(Person {
                         name,
                         birthdate,
@@ -85,7 +83,7 @@ mod tests {
     }
 
     #[test]
-    fn builds_a_new_person() {
+    fn builds_a_person_with_all_fields() {
         let person_result = PersonBuilder::new()
             .with_name(String::from("Evangivaldo"))
             .with_birthdate(String::from("25/12/1988"))
@@ -97,7 +95,7 @@ mod tests {
         assert_eq!(person_result.is_ok(), true);
         let person = person_result.unwrap();
         assert_eq!(person.name, "Evangivaldo");
-        assert_eq!(person.birthdate, "25/12/1988");
+        assert_eq!(person.birthdate, Some(String::from("25/12/1988")));
         assert_eq!(person.favorite_things[0], "Games");
         assert_eq!(person.favorite_things[1], "Traveling");
     }
@@ -110,10 +108,8 @@ mod tests {
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
         let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_birthdate = errors.contains(&PersonBuildingError::RequiresBirthdate);
         let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
         assert_eq!(has_error_requires_name, true);
-        assert_eq!(has_error_requires_birthdate, true);
         assert_eq!(has_error_requires_favorite_things, true);
     }
 
@@ -127,28 +123,26 @@ mod tests {
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
         let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_birthdate = errors.contains(&PersonBuildingError::RequiresBirthdate);
         let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
         assert_eq!(has_error_requires_name, true);
-        assert_eq!(has_error_requires_birthdate, false);
         assert_eq!(has_error_requires_favorite_things, false);
     }
 
     #[test]
-    fn fails_building_person_without_birthdate() {
+    fn builds_person_without_birthdate() {
         let person_result = PersonBuilder::new()
             .with_name(String::from("Evangivaldo"))
             .with_favorite_thing(String::from("Games"))
+            .with_favorite_thing(String::from("Traveling"))
             .build();
+        
             
-        assert_eq!(person_result.is_err(), true);
-        let errors = person_result.unwrap_err();
-        let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_birthdate = errors.contains(&PersonBuildingError::RequiresBirthdate);
-        let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
-        assert_eq!(has_error_requires_name, false);
-        assert_eq!(has_error_requires_birthdate, true);
-        assert_eq!(has_error_requires_favorite_things, false);
+        assert_eq!(person_result.is_ok(), true);
+        let person = person_result.unwrap();
+        assert_eq!(person.name, "Evangivaldo");
+        assert_eq!(person.birthdate, None);
+        assert_eq!(person.favorite_things[0], "Games");
+        assert_eq!(person.favorite_things[1], "Traveling");
     }
 
     #[test]
@@ -161,10 +155,8 @@ mod tests {
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
         let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_birthdate = errors.contains(&PersonBuildingError::RequiresBirthdate);
         let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
         assert_eq!(has_error_requires_name, false);
-        assert_eq!(has_error_requires_birthdate, false);
         assert_eq!(has_error_requires_favorite_things, true);
     }
 
@@ -177,10 +169,8 @@ mod tests {
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
         let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_birthdate = errors.contains(&PersonBuildingError::RequiresBirthdate);
         let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
         assert_eq!(has_error_requires_name, true);
-        assert_eq!(has_error_requires_birthdate, true);
         assert_eq!(has_error_requires_favorite_things, false);
     }
 
@@ -193,10 +183,8 @@ mod tests {
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
         let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_birthdate = errors.contains(&PersonBuildingError::RequiresBirthdate);
         let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
         assert_eq!(has_error_requires_name, true);
-        assert_eq!(has_error_requires_birthdate, false);
         assert_eq!(has_error_requires_favorite_things, true);
     }
 
@@ -209,10 +197,8 @@ mod tests {
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
         let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_birthdate = errors.contains(&PersonBuildingError::RequiresBirthdate);
         let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
         assert_eq!(has_error_requires_name, false);
-        assert_eq!(has_error_requires_birthdate, true);
         assert_eq!(has_error_requires_favorite_things, true);
     }
 }
