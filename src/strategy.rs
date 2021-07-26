@@ -1,3 +1,6 @@
+// Source implementations for bubblesort: https://chercher.tech/rust/bubble-sort-rust
+// TODO: Do mergesort, quicksort and others as well!
+
 #[cfg(test)]
 mod tests {
     trait SortingStrategy {
@@ -22,9 +25,9 @@ mod tests {
         }
     }
 
-    struct AnotherBubbleSorter;
+    struct OptimizedBubbleSorter;
 
-    impl SortingStrategy for AnotherBubbleSorter {
+    impl SortingStrategy for OptimizedBubbleSorter {
         fn sort<T: PartialOrd>(list: &mut Vec<T>) {
             let mut new_len: usize;
             let mut len = list.len();
@@ -57,7 +60,7 @@ mod tests {
     fn another_bubblesort_works() {
         let mut list = vec![3, 7, 2, 1];
 
-        AnotherBubbleSorter::sort(&mut list);
+        OptimizedBubbleSorter::sort(&mut list);
 
         assert_eq!(list, vec![1, 2, 3, 7]);
     }

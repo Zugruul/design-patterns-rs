@@ -1,6 +1,6 @@
 pub trait Builder<T, E> {
     /// fn with_t(&mut self, t: T) -> &mut Self {
-    fn build(&mut self) -> Result<T, E>;
+    fn build(self) -> Result<T, E>;
 }
 
 #[cfg(test)]
@@ -57,16 +57,16 @@ mod tests {
     }
 
     impl Builder<Person, Vec<PersonBuildingError>> for PersonBuilder {
-        fn build(&mut self) -> Result<Person, Vec<PersonBuildingError>> {
-            match (self.name.is_none(), self.favorite_things.is_none()) {
-                (true, true) => Err(vec![PersonBuildingError::RequiresName, PersonBuildingError::RequiresFavoriteThingsList]),
-                (true, false) => Err(vec![PersonBuildingError::RequiresName]),
-                (false, true) => Err(vec![PersonBuildingError::RequiresFavoriteThingsList]),
-                (false, false) => {
+        fn build(self) -> Result<Person, Vec<PersonBuildingError>> {
+            match (self.name, self.favorite_things) {
+                (None, None) => Err(vec![PersonBuildingError::RequiresName, PersonBuildingError::RequiresFavoriteThingsList]),
+                (Some(_), None) => Err(vec![PersonBuildingError::RequiresName]),
+                (None, Some(_)) => Err(vec![PersonBuildingError::RequiresFavoriteThingsList]),
+                (Some(name), Some(favorite_things)) => {
                     Ok(Person {
-                        name: self.name.take().unwrap(),
-                        birthdate: self.birthdate.take(),
-                        favorite_things: self.favorite_things.take().unwrap(),
+                        name,
+                        birthdate: self.birthdate,
+                        favorite_things,
                     })
                 },
             }
@@ -75,12 +75,15 @@ mod tests {
 
     #[test]
     fn builds_a_person_with_all_fields() {
-        let person_result = PersonBuilder::new()
-            .with_name(String::from("Evangivaldo"))
+        let mut person_builder = PersonBuilder::new();
+
+        &person_builder.with_name(String::from("Evangivaldo"))
             .with_birthdate(String::from("25/12/1988"))
             .with_favorite_thing(String::from("Games"))
-            .with_favorite_thing(String::from("Traveling"))
-            .build();
+            .with_favorite_thing(String::from("Traveling"));
+
+
+        let person_result = person_builder.build();
         
             
         assert_eq!(person_result.is_ok(), true);
@@ -106,10 +109,13 @@ mod tests {
 
     #[test]
     fn fails_building_person_without_name() {
-        let person_result = PersonBuilder::new()
+        let mut person_builder = PersonBuilder::new();
+
+        &person_builder
             .with_birthdate(String::from("25/12/1988"))
-            .with_favorite_thing(String::from("Games"))
-            .build();
+            .with_favorite_thing(String::from("Games"));
+
+        let person_result = person_builder.build();
             
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
@@ -121,11 +127,14 @@ mod tests {
 
     #[test]
     fn builds_person_without_birthdate() {
-        let person_result = PersonBuilder::new()
+        let mut person_builder = PersonBuilder::new();
+
+        &person_builder
             .with_name(String::from("Evangivaldo"))
             .with_favorite_thing(String::from("Games"))
-            .with_favorite_thing(String::from("Traveling"))
-            .build();
+            .with_favorite_thing(String::from("Traveling"));
+
+        let person_result = person_builder.build();
         
             
         assert_eq!(person_result.is_ok(), true);
@@ -138,11 +147,14 @@ mod tests {
 
     #[test]
     fn fails_building_person_without_favorite_things() {
-        let person_result = PersonBuilder::new()
+        let mut person_builder = PersonBuilder::new();
+
+        &person_builder
             .with_name(String::from("Evangivaldo"))
-            .with_birthdate(String::from("25/12/1988"))
-            .build();
-            
+            .with_birthdate(String::from("25/12/1988"));
+
+        let person_result = person_builder.build();
+
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
         let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
@@ -153,10 +165,13 @@ mod tests {
 
     #[test]
     fn fails_building_person_without_name_and_birthdate() {
-        let person_result = PersonBuilder::new()
-            .with_favorite_thing(String::from("Games"))
-            .build();
-            
+        let mut person_builder = PersonBuilder::new();
+
+        &person_builder
+            .with_favorite_thing(String::from("Games"));
+
+        let person_result = person_builder.build();
+
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
         let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
@@ -167,10 +182,13 @@ mod tests {
 
     #[test]
     fn fails_building_person_without_name_and_favorite_things() {
-        let person_result = PersonBuilder::new()
-            .with_birthdate(String::from("25/12/1988"))
-            .build();
-            
+        let mut person_builder = PersonBuilder::new();
+
+        &person_builder
+            .with_birthdate(String::from("25/12/1988"));
+
+        let person_result = person_builder.build();
+
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
         let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
@@ -181,9 +199,12 @@ mod tests {
 
     #[test]
     fn fails_building_person_without_birthdate_and_favorite_things() {
-        let person_result = PersonBuilder::new()
-            .with_name(String::from("Evangivaldo"))
-            .build();
+        let mut person_builder = PersonBuilder::new();
+
+        &person_builder
+            .with_birthdate(String::from("25/12/1988"));
+
+        let person_result = person_builder.build();
             
         assert_eq!(person_result.is_err(), true);
         let errors = person_result.unwrap_err();
