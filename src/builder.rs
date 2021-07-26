@@ -58,24 +58,15 @@ mod tests {
 
     impl Builder<Person, Vec<PersonBuildingError>> for PersonBuilder {
         fn build(&mut self) -> Result<Person, Vec<PersonBuildingError>> {
-            let name_opt: Option<String> = self.name.take();
-            let birthdate_opt: Option<String> = self.birthdate.take();
-            let favorite_things_opt: Option<Vec<String>> = self.favorite_things.take();
-
-            use PersonBuildingError::{RequiresName, RequiresFavoriteThingsList};
-
-            match (name_opt, birthdate_opt, favorite_things_opt) {
-                (None, None, None) => Err(vec![RequiresName, RequiresFavoriteThingsList]),
-                (None, None, Some(_)) => Err(vec![RequiresName]),
-                (None, Some(_), None) => Err(vec![RequiresName, RequiresFavoriteThingsList]),
-                (None, Some(_), Some(_)) => Err(vec![RequiresName]),
-                (Some(_), None, None) => Err(vec![RequiresFavoriteThingsList]),
-                (Some(_), Some(_), None) => Err(vec![RequiresFavoriteThingsList]),
-                (Some(name), birthdate, Some(favorite_things)) => {
+            match (self.name.is_none(), self.favorite_things.is_none()) {
+                (true, true) => Err(vec![PersonBuildingError::RequiresName, PersonBuildingError::RequiresFavoriteThingsList]),
+                (true, false) => Err(vec![PersonBuildingError::RequiresName]),
+                (false, true) => Err(vec![PersonBuildingError::RequiresFavoriteThingsList]),
+                (false, false) => {
                     Ok(Person {
-                        name,
-                        birthdate,
-                        favorite_things,
+                        name: self.name.take().unwrap(),
+                        birthdate: self.birthdate.take(),
+                        favorite_things: self.favorite_things.take().unwrap(),
                     })
                 },
             }
