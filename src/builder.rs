@@ -58,10 +58,19 @@ mod tests {
 
     impl Builder<Person, Vec<PersonBuildingError>> for PersonBuilder {
         fn build(self) -> Result<Person, Vec<PersonBuildingError>> {
+            use PersonBuildingError::{RequiresFavoriteThingsList, RequiresName};
+
             match (self.name, self.favorite_things) {
-                (None, None) => Err(vec![PersonBuildingError::RequiresName, PersonBuildingError::RequiresFavoriteThingsList]),
-                (Some(_), None) => Err(vec![PersonBuildingError::RequiresName]),
-                (None, Some(_)) => Err(vec![PersonBuildingError::RequiresFavoriteThingsList]),
+                (None, None) => Err(vec![
+                    RequiresName, 
+                    RequiresFavoriteThingsList
+                ]),
+                (Some(_), None) => Err(vec![
+                    RequiresName
+                ]),
+                (None, Some(_)) => Err(vec![
+                    RequiresFavoriteThingsList
+                ]),
                 (Some(name), Some(favorite_things)) => {
                     Ok(Person {
                         name,
