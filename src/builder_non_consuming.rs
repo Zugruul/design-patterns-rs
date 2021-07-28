@@ -66,10 +66,10 @@ mod tests {
                     RequiresFavoriteThingsList
                 ]),
                 (Some(_), None) => Err(vec![
-                    RequiresName
+                    RequiresFavoriteThingsList
                 ]),
                 (None, Some(_)) => Err(vec![
-                    RequiresFavoriteThingsList
+                    RequiresName
                 ]),
                 (Some(name), Some(favorite_things)) => {
                     Ok(Person {
@@ -127,11 +127,7 @@ mod tests {
         let person_result = person_builder.build();
             
         assert_eq!(person_result.is_err(), true);
-        let errors = person_result.unwrap_err();
-        let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
-        assert_eq!(has_error_requires_name, true);
-        assert_eq!(has_error_requires_favorite_things, false);
+        assert_eq!(person_result.unwrap_err(), vec![PersonBuildingError::RequiresName]);
     }
 
     #[test]
@@ -165,11 +161,7 @@ mod tests {
         let person_result = person_builder.build();
 
         assert_eq!(person_result.is_err(), true);
-        let errors = person_result.unwrap_err();
-        let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
-        assert_eq!(has_error_requires_name, false);
-        assert_eq!(has_error_requires_favorite_things, true);
+        assert_eq!(person_result.unwrap_err(), vec![PersonBuildingError::RequiresFavoriteThingsList]);
     }
 
     #[test]
@@ -182,11 +174,7 @@ mod tests {
         let person_result = person_builder.build();
 
         assert_eq!(person_result.is_err(), true);
-        let errors = person_result.unwrap_err();
-        let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
-        assert_eq!(has_error_requires_name, true);
-        assert_eq!(has_error_requires_favorite_things, false);
+        assert_eq!(person_result.unwrap_err(), vec![PersonBuildingError::RequiresName]);
     }
 
     #[test]
@@ -199,11 +187,7 @@ mod tests {
         let person_result = person_builder.build();
 
         assert_eq!(person_result.is_err(), true);
-        let errors = person_result.unwrap_err();
-        let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
-        assert_eq!(has_error_requires_name, true);
-        assert_eq!(has_error_requires_favorite_things, true);
+        assert_eq!(person_result.unwrap_err(), vec![PersonBuildingError::RequiresName, PersonBuildingError::RequiresFavoriteThingsList]);
     }
 
     #[test]
@@ -211,15 +195,11 @@ mod tests {
         let mut person_builder = PersonBuilder::new();
 
         &person_builder
-            .with_birthdate(String::from("25/12/1988"));
+            .with_name(String::from("Evangivaldo"));
 
         let person_result = person_builder.build();
             
         assert_eq!(person_result.is_err(), true);
-        let errors = person_result.unwrap_err();
-        let has_error_requires_name = errors.contains(&PersonBuildingError::RequiresName);
-        let has_error_requires_favorite_things = errors.contains(&PersonBuildingError::RequiresFavoriteThingsList);
-        assert_eq!(has_error_requires_name, false);
-        assert_eq!(has_error_requires_favorite_things, true);
+        assert_eq!(person_result.unwrap_err(), vec![PersonBuildingError::RequiresFavoriteThingsList]);
     }
 }
