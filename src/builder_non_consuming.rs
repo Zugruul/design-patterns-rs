@@ -84,20 +84,16 @@ mod tests {
 
     #[test]
     fn builds_a_person_with_all_fields() {
-        let mut person_builder = PersonBuilder::new();
-
-        &person_builder.with_name(String::from("Evangivaldo"))
+        let person_result = PersonBuilder::new()
+            .with_name(String::from("Fulano"))
             .with_birthdate(String::from("25/12/1988"))
             .with_favorite_thing(String::from("Games"))
-            .with_favorite_thing(String::from("Traveling"));
-
-
-        let person_result = person_builder.build();
-        
+            .with_favorite_thing(String::from("Traveling"))
+            .build();
             
         assert_eq!(person_result.is_ok(), true);
         let person = person_result.unwrap();
-        assert_eq!(person.name, "Evangivaldo");
+        assert_eq!(person.name, "Fulano");
         assert_eq!(person.birthdate, Some(String::from("25/12/1988")));
         assert_eq!(person.favorite_things[0], "Games");
         assert_eq!(person.favorite_things[1], "Traveling");
