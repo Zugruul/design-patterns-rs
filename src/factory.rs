@@ -14,10 +14,10 @@ mod tests {
     enum Usage {
         MeleeWeapon,
         RangedWeapon,
-        Consumable
+        Protection
     }
 
-    trait UsableItem {
+    trait EquipableItem {
         fn get_usage(&self) -> Usage;
         
         fn as_any(&self) -> &dyn Any;
@@ -27,12 +27,12 @@ mod tests {
     enum Item {
         Bow,
         Axe,
-        Potion
+        Armor
     }
     
     struct Axe;
     
-    impl UsableItem for Axe {
+    impl EquipableItem for Axe {
         fn get_usage(&self) -> Usage {
             Usage::MeleeWeapon
         }
@@ -44,7 +44,7 @@ mod tests {
     
     struct Bow;
 
-    impl UsableItem for Bow {
+    impl EquipableItem for Bow {
         fn get_usage(&self) -> Usage {
             Usage::RangedWeapon
         }
@@ -54,11 +54,11 @@ mod tests {
         }
     }
 
-    struct Potion;
+    struct Armor;
 
-    impl UsableItem for Potion {
+    impl EquipableItem for Armor {
         fn get_usage(&self) -> Usage {
-            Usage::Consumable
+            Usage::Protection
         }
 
         fn as_any(&self) -> &dyn Any {
@@ -69,13 +69,13 @@ mod tests {
     struct ItemFactory;
     impl Factory for ItemFactory {
         type Kind = Item;
-        type Output = Box<dyn UsableItem>;
+        type Output = Box<dyn EquipableItem>;
   
         fn create(kind: Self::Kind) -> Self::Output {
             match kind {
                 Item::Bow => Box::new(Bow {}),
                 Item::Axe => Box::new(Axe {}),
-                Item::Potion => Box::new(Potion {}),
+                Item::Armor => Box::new(Armor {}),
             }
         }
     }
@@ -99,11 +99,11 @@ mod tests {
     }
 
     #[test]
-    fn it_creates_potion() {
-        let item = ItemFactory::create(Item::Potion);
-        let possibly_a_potion = item.as_any().downcast_ref::<Potion>();
+    fn it_creates_armor() {
+        let item = ItemFactory::create(Item::Armor);
+        let possibly_an_armor = item.as_any().downcast_ref::<Armor>();
 
-        assert_eq!(item.get_usage(), Usage::Consumable);
-        assert_eq!(possibly_a_potion.is_some(), true)
+        assert_eq!(item.get_usage(), Usage::Protection);
+        assert_eq!(possibly_an_armor.is_some(), true)
     }
 }
