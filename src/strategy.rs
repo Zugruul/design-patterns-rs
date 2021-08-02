@@ -64,4 +64,26 @@ mod tests {
 
         assert_eq!(list, vec![1, 2, 3, 7]);
     }
+
+    fn sort_with_strategy<T: SortingStrategy, R: PartialOrd>(list: &mut Vec<R>) {
+        T::sort(list);
+    }
+
+    #[test]
+    fn using_first_bubblesort_strategy() {
+        let mut list: Vec<i32> = vec![3, 7, 2, 1];
+
+        sort_with_strategy::<BubbleSorter, i32>(&mut list);
+
+        assert_eq!(list, vec![1, 2, 3, 7]);
+    }
+
+    #[test]
+    fn using_optimized_bubblesort_strategy() {
+        let mut list: Vec<i32> = vec![3, 7, 2, 1];
+
+        sort_with_strategy::<OptimizedBubbleSorter, i32>(&mut list);
+
+        assert_eq!(list, vec![1, 2, 3, 7]);
+    }
 }
